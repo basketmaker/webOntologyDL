@@ -76,7 +76,7 @@ public class AdapterIdLabel {
 	{
 		return labelToId.get(plabel);
 	}
-	String getLabel(String pid)
+	String getLabel(IRI pid)
 	{
 		return idToLabel.get(pid);
 	}

@@ -84,7 +84,8 @@ public class ControleOntology {
 	    constructorCheckBox = vue.getRoleConstructors();
 	    for(final Constructor name : constructorCheckBox.keySet())
 	    {
-	    	constructorCheckBox.get(name).addActionListener(new ActionListener() {
+	    	constructorCheckBox.get(name).addActionListener(new ActionListener() 
+	    	{
 				boolean ischecked = false;
 				@Override
 				public void actionPerformed(ActionEvent ae) {

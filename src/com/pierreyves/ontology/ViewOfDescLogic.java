@@ -3,14 +3,13 @@ package com.pierreyves.ontology;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 
-import com.pierreyves.tool.implementation.AdapterIdLabel;
 import com.pierreyves.tool.model.AxiomType;
 import com.pierreyves.tool.model.Constructor;
+import com.pierreyves.tool.model.DecisionProblem;
 
 import java.awt.*;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Observer;
 import java.util.Observable;
 	
@@ -25,17 +24,16 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	private static final long serialVersionUID = -1892287360468678740L;
 	  
 	
-	  private HashMap<Constructor,JCheckBox> conceptConstructor;
-	  private HashMap<Constructor,JCheckBox> roleConstructors;
-	  private HashMap<AxiomType,JCheckBox> roleAxioms;
-	  private HashMap<AxiomType,JCheckBox> conceptAxioms;
+	private HashMap<Constructor,JCheckBox> conceptConstructor;
+	private HashMap<Constructor,JCheckBox> roleConstructors;
+	private HashMap<AxiomType,JCheckBox> roleAxioms;
+	private HashMap<AxiomType,JCheckBox> conceptAxioms;
 	  
-	  private JLabel complexitySatText;
-	  private JLabel complexityAConsText;
-	  
+	private HashMap<DecisionProblem,JLabel> complexityAndHardnessResult;
 	  
 	  
-	  public ViewOfDescLogic(ModeleOfConstructor modele) {
+	  
+	public ViewOfDescLogic(ModeleOfConstructor modele) {
 	    super("Ontology Test");
 	    modele.addObserver(this);
 	    Container content = getContentPane();
@@ -60,10 +58,6 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	    JPanel roleConstructorsPanel = new JPanel();
 	    JPanel roleAxiomsPanel = new JPanel();
 	    JPanel conceptAxiomsPanel = new JPanel();
-	    JPanel resultsConceptSatisfiabilitypanel = new JPanel();
-	    JPanel resultsAboxConsistencypanel = new JPanel();
-	    JPanel textAboxConsistencypanel = new JPanel();
-	    JPanel textConceptSatisfiabilitypanel = new JPanel();
 	    JPanel resultpanel = new JPanel();
 	    JPanel textpanel = new JPanel();
 	    
@@ -75,40 +69,33 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	    createMenuCheckbox(roleAxiomsPanel, roleAxioms, "Role Axiom");
 	    createMenuCheckbox(conceptAxiomsPanel, conceptAxioms, "Concept of axioms");
 	    
+	    
+	    
 	    /*
 	     * The results are here
 	     * */
 	    
 	    
-	    
-	    resultsConceptSatisfiabilitypanel.setLayout(new GridLayout(1,1));
-	    resultsConceptSatisfiabilitypanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-	    resultsAboxConsistencypanel.setLayout(new GridLayout(1,1));
-	    resultsAboxConsistencypanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-	    textConceptSatisfiabilitypanel.setLayout(new GridLayout(1,1));
-	    textConceptSatisfiabilitypanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-	    textAboxConsistencypanel.setLayout(new GridLayout(1,1));
-	    textAboxConsistencypanel.setBorder(new BevelBorder(BevelBorder.RAISED));
-	    
 	    resultpanel.setLayout(new GridLayout(2,0));
 	    textpanel.setLayout(new GridLayout(2,0));
 	    
 	    
-	    textConceptSatisfiabilitypanel.add(new JLabel("Concept \n satisfiability "));
-	    textAboxConsistencypanel.add(new JLabel("ABox \n Consistency"));
-	    
-	    complexitySatText = new JLabel("complexity concept sat");
-	    complexityAConsText = new JLabel("complexity ABox consistency");
-	    resultsConceptSatisfiabilitypanel.add(complexitySatText);
-	    resultsAboxConsistencypanel.add(complexityAConsText);
-	    
-	    
-	    
-	    textpanel.add(textConceptSatisfiabilitypanel);
-	    textpanel.add(textAboxConsistencypanel);
-	    resultpanel.add(resultsConceptSatisfiabilitypanel);
-	    resultpanel.add(resultsAboxConsistencypanel);
-	    
+	    complexityAndHardnessResult = new HashMap<>();
+	    JPanel tmp;
+	    for(DecisionProblem dec : modele.getAllDecisionProblems())
+	    {
+	    	complexityAndHardnessResult.put(dec,new JLabel());
+	    	tmp = new JPanel();
+	    	tmp.setLayout(new GridLayout(1,1));
+	    	tmp.setBorder(new BevelBorder(BevelBorder.RAISED));
+	    	tmp.add(new JLabel(dec.getName()));
+	    	textpanel.add(tmp);
+	    	tmp = new JPanel();
+	    	tmp.setLayout(new GridLayout(1,1));
+	    	tmp.setBorder(new BevelBorder(BevelBorder.RAISED));
+	    	tmp.add(complexityAndHardnessResult.get(dec));
+	    	resultpanel.add(tmp);
+	    }
 	    
 	    
 	    content.add(conceptConstructorPanel);
@@ -120,7 +107,7 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	    
 	    pack();
 	    setVisible(true);
-	  }
+	}
 	  
 	  
 	  
@@ -128,10 +115,13 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	  @Override
 	  public void update(Observable obs, Object arg){
 		  
-		    if(obs instanceof ModeleOfConstructor){
-		      ModeleOfConstructor complexity = (ModeleOfConstructor)obs;
-		      this.complexityAConsText.setText(complexity.requestComplexity("ABoxConsistency")+" "+complexity.requestHardness("ABoxConsistency"));
-		      this.complexitySatText.setText(complexity.requestComplexity("ConceptSatisfiability")+" "+complexity.requestHardness("ConceptSatisfiability"));
+		    if(obs instanceof ModeleOfConstructor)
+		    {
+		    	ModeleOfConstructor complexity = (ModeleOfConstructor)obs;
+		    	for(DecisionProblem c : complexityAndHardnessResult.keySet())
+		    	{
+		    		complexityAndHardnessResult.get(c).setText(complexity.getComplexityResult(c).getComplexity().getName());
+		    	}
 		    } 
 	    }
 	    

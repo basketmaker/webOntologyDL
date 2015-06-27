@@ -10,7 +10,6 @@ import com.pierreyves.tool.model.AxiomType;
 import com.pierreyves.tool.model.ComplexityQueryResult;
 import com.pierreyves.tool.model.Constructor;
 import com.pierreyves.tool.model.DecisionProblem;
-import com.pierreyves.tool.model.HardnessQueryResult;
 import com.pierreyves.tool.model.IRequest;
 
 
@@ -95,14 +94,9 @@ public class ModeleOfConstructor extends Observable{
 		  notifyObservers();
 	  }
 	  
-	  public ComplexityQueryResult getComplexity(DecisionProblem pdecisionProblem)
+	  public ComplexityQueryResult getComplexityResult(DecisionProblem pdecisionProblem)
 	  {
 		  return request.getComplexity(pdecisionProblem, axiomsSelect, constructorsSelect);
-	  }
-	  
-	  public HardnessQueryResult getHardness(DecisionProblem pdecisionProblem)
-	  {
-		  return request.getHardness(pdecisionProblem, axiomsSelect, constructorsSelect);
 	  }
 	  
 	  
@@ -123,6 +117,11 @@ public class ModeleOfConstructor extends Observable{
 		
 		public Collection<Constructor> getAllConceptConstructors() {
 			return request.getAllConceptConstructors();
+		}
+		
+		public Collection<DecisionProblem> getAllDecisionProblems()
+		{
+			return request.getAllDecisionProblems();
 		}
 	  
 }

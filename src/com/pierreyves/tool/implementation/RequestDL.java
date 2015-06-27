@@ -22,7 +22,6 @@ import com.pierreyves.tool.model.AxiomType;
 import com.pierreyves.tool.model.ComplexityQueryResult;
 import com.pierreyves.tool.model.Constructor;
 import com.pierreyves.tool.model.DecisionProblem;
-import com.pierreyves.tool.model.HardnessQueryResult;
 import com.pierreyves.tool.model.IRequest;
 
 public class RequestDL implements IRequest {
@@ -50,7 +49,7 @@ public class RequestDL implements IRequest {
 		 * get all the class and property we need in the request
 		 */
 
-		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getName()));
+		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getId()));
 		OWLObjectProperty hasDesclogic = df.getOWLObjectProperty(adapter.getId("hasDescriptionLogic"));
 		OWLClass descriptionLogic = df.getOWLClass(adapter.getId("DescriptionLogic"));
 		OWLObjectProperty hasConstructorProperty = df.getOWLObjectProperty(adapter.getId("hasConstructor"));
@@ -71,7 +70,10 @@ public class RequestDL implements IRequest {
 		/*
 		 * Now we can construct the request
 		 */
-
+		
+		
+		// MemberShip
+		
 		OWLClassExpression axiomsDisjonction = df.getOWLObjectUnionOf(axioms);
 		OWLClassExpression constructorsDisjonction = df
 				.getOWLObjectUnionOf(constructors);
@@ -83,16 +85,37 @@ public class RequestDL implements IRequest {
 
 		OWLClassExpression hasAxiomsOnlyAndHasConstructorsOnly = df
 				.getOWLObjectIntersectionOf(hasConstructorsOnly, hasAxiomsOnly);
+		
+		
+		//Hardness
+		
+		
+		
+		Set<OWLClassExpression> hasSome = new HashSet<>();
+		
+		for(OWLClass c : axioms)
+		{
+			hasSome.add(df.getOWLObjectSomeValuesFrom(hasAxiomProperty, c));
+		}
+		for(OWLClass c : constructors)
+		{
+			hasSome.add(df.getOWLObjectSomeValuesFrom(hasConstructorProperty, c));
+		}
+		
+		OWLClassExpression hardnessPart = df.getOWLObjectIntersectionOf(hasSome);
+		
+		
+		
 		OWLClassExpression descLogicandUnionOfConstructorsAxioms = df
 				.getOWLObjectIntersectionOf(descriptionLogic,
-						hasAxiomsOnlyAndHasConstructorsOnly);
+						hasAxiomsOnlyAndHasConstructorsOnly,hardnessPart);
 
 		OWLClassExpression hasDesclogicSome = df.getOWLObjectSomeValuesFrom(
 				hasDesclogic, descLogicandUnionOfConstructorsAxioms);
 		OWLClassExpression request = df.getOWLObjectIntersectionOf(
 				decisionProblem, hasDesclogicSome);
 
-		VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
+		VisitorRenderExpression visitor = new VisitorRenderExpression(ont,0);
 		request.accept(visitor);
 		System.out.println("expression : " + visitor.getExpression());
 
@@ -101,23 +124,22 @@ public class RequestDL implements IRequest {
 		String complexity = "";
 		for (OWLClass c : subClasses.getFlattened()) {
 
-			if (!adapter.getLabel(c.getIRI().getFragment()).toString()
-					.equals(pdecisionProblem)) {
-				complexity = adapter.getLabel(c.getIRI().getFragment());
+			if (!adapter.getLabel(c.getIRI()).toString().equals(pdecisionProblem.getId())) 
+			{
+				complexity += adapter.getLabel(c.getIRI())+" ";
 			}
 		}
 		return new ComplexityQueryResultImpl(new ComplexityImpl(complexity),null);
 
 	}
-
+/*
 	@Override
 	public HardnessQueryResult getHardness(DecisionProblem pdecisionProblem, 
 					Collection<AxiomType> paxioms, Collection<Constructor> pconstructors) {
-		/*
-		 * get all the class and property we need in the request
-		 */
+		
+		 // get all the class and property we need in the request
 
-		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getName()));
+		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getId()));
 		OWLObjectProperty hasDesclogic = df.getOWLObjectProperty(adapter.getId("hasDescriptionLogic"));
 		OWLClass descriptionLogic = df.getOWLClass(adapter.getId("DescriptionLogic"));
 		OWLObjectProperty hasConstructorProperty = df.getOWLObjectProperty(adapter.getId("hasConstructor"));
@@ -135,9 +157,9 @@ public class RequestDL implements IRequest {
 			c.toString();
 		}
 
-		/*
-		 * Now we can construct the request
-		 */
+		
+		 //* Now we can construct the request
+		 
 			
 
 		Set<OWLClassExpression> hasSome = new HashSet<>();
@@ -166,18 +188,19 @@ public class RequestDL implements IRequest {
 		String hardness = "";
 		for (OWLClass c : subClasses.getFlattened()) {
 
-			if (!adapter.getLabel(c.getIRI().getFragment()).toString()
+			if (!adapter.getLabel(c.getIRI()).toString()
 					.equals(pdecisionProblem)) {
-				hardness = adapter.getLabel(c.getIRI().getFragment());
+				hardness = adapter.getLabel(c.getIRI());
 			}
 		}
 		return new HardnessQueryResultImpl(new HardnessImpl(hardness),null);
 	}
-
+	
+*/
 	@Override
 	public Collection<AxiomType> getAllRoleAxioms() {
 		Set<AxiomType> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("ConceptConstructor"));
+		OWLClass category = df.getOWLClass(adapter.getId("RoleAxiom"));
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
@@ -196,7 +219,7 @@ public class RequestDL implements IRequest {
 	@Override
 	public Collection<AxiomType> getAllConceptAxioms() {
 		Set<AxiomType> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("ConceptConstructor"));
+		OWLClass category = df.getOWLClass(adapter.getId("ConceptAxiom"));
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
@@ -249,6 +272,16 @@ public class RequestDL implements IRequest {
 		}
 		return subCategoryReturn;
 	}
+
+	@Override
+	public Collection<DecisionProblem> getAllDecisionProblems() {
+		// TODO Auto-generated method stub
+		Set<DecisionProblem> decisionProblems = new HashSet<>();
+		decisionProblems.add(new DecisionProblemImpl("ABox \n consistency","ABoxConsistency"));
+		decisionProblems.add(new DecisionProblemImpl("Concept \n Satisfiability","ConceptSatisfiability"));
+		return decisionProblems;
+	}
+	
 	
 	
 }

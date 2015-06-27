@@ -27,16 +27,29 @@ import org.semanticweb.owlapi.model.OWLOntology;
 
 public class VisitorRenderExpression implements OWLClassExpressionVisitor {
 	
-	String render_expression = "";
+	private String render_expression = "";
+	private int depht = 0;
 	private OWLOntology ont;
 	
-	public VisitorRenderExpression(OWLOntology pont)
+	public VisitorRenderExpression(OWLOntology pont, int pdepht)
 	{
+		depht = pdepht;
 		ont = pont;
 	}
 	public String getExpression()
 	{
 		return render_expression;
+	}
+	
+	public String repeateString(String repete, int times)
+	{
+		String retour = "";
+		int i;
+		for(i = 0; i < times; i++)
+		{
+			retour+=repete;
+		}
+		return retour;
 	}
 	
 	private String getLabel(OWLClass c)
@@ -63,13 +76,13 @@ public class VisitorRenderExpression implements OWLClassExpressionVisitor {
 		render_expression = "(";
 		for(OWLClassExpression c : ce.getOperands())
 		{
-			VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
+			VisitorRenderExpression visitor = new VisitorRenderExpression(ont,depht+1);
 			c.accept(visitor);
-			render_expression += visitor.getExpression()+" and "; 
+			render_expression += "\n"+repeateString("\t",depht)+visitor.getExpression()+" and "; 
 		}
 		if(render_expression.length() != 1)
 			render_expression = render_expression.substring(0,render_expression.length()-4);
-		render_expression+=")";
+		render_expression+="\n"+repeateString("\t",depht-1)+")";
 	}
 
 	@Override
@@ -78,13 +91,13 @@ public class VisitorRenderExpression implements OWLClassExpressionVisitor {
 		render_expression = "(";
 		for(OWLClassExpression c : ce.getOperands())
 		{
-			VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
+			VisitorRenderExpression visitor = new VisitorRenderExpression(ont,depht+1);
 			c.accept(visitor);
-			render_expression += visitor.getExpression()+" or "; 
+			render_expression += "\n"+repeateString("\t",depht)+visitor.getExpression()+" or "; 
 		}
 		if(render_expression.length() != 1)
 			render_expression = render_expression.substring(0,render_expression.length()-4);
-		render_expression+=")";
+		render_expression+="\n"+repeateString("\t",depht-1)+")";
 	}
 
 	@Override
@@ -107,7 +120,7 @@ public class VisitorRenderExpression implements OWLClassExpressionVisitor {
 				}
 			}
 		}
-		VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
+		VisitorRenderExpression visitor = new VisitorRenderExpression(ont,depht+1);
 		ce.getFiller().accept(visitor);
 		render_expression += retour+" some ";
 		render_expression += visitor.getExpression();
@@ -128,9 +141,9 @@ public class VisitorRenderExpression implements OWLClassExpressionVisitor {
 				}
 			}
 		}
-		VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
+		VisitorRenderExpression visitor = new VisitorRenderExpression(ont,depht+1);
 		ce.getFiller().accept(visitor);
-		render_expression += retour+" only ";
+		render_expression += "\n"+repeateString("\t",depht)+retour+" only ";
 		render_expression += visitor.getExpression();
 		render_expression += ")";
 		

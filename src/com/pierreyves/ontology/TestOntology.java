@@ -151,7 +151,7 @@ public class TestOntology{
 		//OWLSubClassOfAxiom axiom = df.getOWLSubClassOfAxiom(namedpizza,pizza);
 		//System.out.println(reasoner.isEntailed(axiom));
 		
-		NodeSet<OWLClass> subClasses = reasoner.getSubClasses(pizza, true);
+		NodeSet<OWLClass> subClasses = reasoner.getSubClasses(pizzaHasMeat, true);
 		
 		for(OWLClass subClasse : subClasses.getFlattened())
 		{
