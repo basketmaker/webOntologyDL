@@ -3,9 +3,13 @@ package com.pierreyves.ontology;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 
+import com.pierreyves.tool.implementation.AdapterIdLabel;
+import com.pierreyves.tool.model.AxiomType;
+import com.pierreyves.tool.model.Constructor;
+
 import java.awt.*;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Observer;
 import java.util.Observable;
@@ -21,10 +25,10 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	private static final long serialVersionUID = -1892287360468678740L;
 	  
 	
-	  private HashMap<String,JCheckBox> conceptConstructor;
-	  private HashMap<String,JCheckBox> roleConstructors;
-	  private HashMap<String,JCheckBox> roleAxioms;
-	  private HashMap<String,JRadioButton> conceptAxioms;
+	  private HashMap<Constructor,JCheckBox> conceptConstructor;
+	  private HashMap<Constructor,JCheckBox> roleConstructors;
+	  private HashMap<AxiomType,JCheckBox> roleAxioms;
+	  private HashMap<AxiomType,JCheckBox> conceptAxioms;
 	  
 	  private JLabel complexitySatText;
 	  private JLabel complexityAConsText;
@@ -43,13 +47,10 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 		conceptAxioms = new HashMap<>();
 	    
 	    
-	    AdapterIdLabel adapter = new AdapterIdLabel("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl");
-		ViewConstructor constructCheckBox = new ViewConstructor("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl");
-	    
-		createHashMapOfCheckBox(constructCheckBox.getNameOfBox(adapter.getId("ConceptConstructor")),conceptConstructor);
-		createHashMapOfCheckBox(constructCheckBox.getNameOfBox(adapter.getId("RoleConstructor")),roleConstructors);
-		createHashMapOfCheckBox(constructCheckBox.getNameOfBox(adapter.getId("RoleAxiom")),roleAxioms);
-		createHashMapOfRadioButton(constructCheckBox.getNameOfBox(adapter.getId("ConceptAxiom")),conceptAxioms);
+		conceptConstructor = createHashMapOfConstructorCheckBox(modele.getAllConceptConstructors());
+		roleConstructors = createHashMapOfConstructorCheckBox(modele.getAllRoleConstructors());
+		roleAxioms = createHashMapOfAxiomCheckBox(modele.getAllRoleAxioms());
+		conceptAxioms = createHashMapOfAxiomCheckBox(modele.getAllConceptAxioms());
 		
 		/*
 		 * Now we can construct the view
@@ -72,7 +73,7 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	    createMenuCheckbox(conceptConstructorPanel, conceptConstructor, "Concept constructor");
 	    createMenuCheckbox(roleConstructorsPanel, roleConstructors, "Role Constructors");
 	    createMenuCheckbox(roleAxiomsPanel, roleAxioms, "Role Axiom");
-	    createMenuRadioButton(conceptAxiomsPanel, conceptAxioms, "Concept of axioms");
+	    createMenuCheckbox(conceptAxiomsPanel, conceptAxioms, "Concept of axioms");
 	    
 	    /*
 	     * The results are here
@@ -129,54 +130,58 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 		  
 		    if(obs instanceof ModeleOfConstructor){
 		      ModeleOfConstructor complexity = (ModeleOfConstructor)obs;
-		      this.complexitySatText.setText("coucou");
-		      this.complexityAConsText.setText("coucou");
-		      complexity.requestLogique("ABoxConsistency");
+		      this.complexityAConsText.setText(complexity.requestComplexity("ABoxConsistency")+" "+complexity.requestHardness("ABoxConsistency"));
+		      this.complexitySatText.setText(complexity.requestComplexity("ConceptSatisfiability")+" "+complexity.requestHardness("ConceptSatisfiability"));
 		    } 
 	    }
 	    
+	  private HashMap<Constructor, JCheckBox> createHashMapOfConstructorCheckBox(Collection<Constructor> pconstructors)
+	  {
+		  HashMap<Constructor, JCheckBox> constructorWithCheckbox = new HashMap<>();
+		  for(Constructor constructor : pconstructors)
+		  {
+			  constructorWithCheckbox.put(constructor, 
+					  					  new JCheckBox(constructor.getName()));
+		  }
+		  return constructorWithCheckbox;
+	  }
+	  
+	  private HashMap<AxiomType, JCheckBox> createHashMapOfAxiomCheckBox(Collection<AxiomType> paxioms)
+	  {
+		  HashMap<AxiomType, JCheckBox> constructorWithCheckbox = new HashMap<>();
+		  for(AxiomType constructor : paxioms)
+		  {
+			  constructorWithCheckbox.put(constructor, 
+					  					  new JCheckBox(constructor.getName()));
+		  }
+		  return constructorWithCheckbox;
+	  }
 	  
 	  
 	  
-	  
-	  public HashMap<String,JCheckBox> getConceptConstructor()
+	  public HashMap<Constructor,JCheckBox> getConceptConstructor()
 	  {
 		  return conceptConstructor;
 	  }
-	  public HashMap<String,JCheckBox> getRoleConstructors()
+	  public HashMap<Constructor,JCheckBox> getRoleConstructors()
 	  {
 		  return roleConstructors;
 	  }
-	  public HashMap<String,JCheckBox> getRoleAxioms()
+	  public HashMap<AxiomType,JCheckBox> getRoleAxioms()
 	  {
 		  return roleAxioms;
 	  }
-	  public HashMap<String,JRadioButton> getConceptAxioms()
+	  public HashMap<AxiomType,JCheckBox> getConceptAxioms()
 	  {
 		  return conceptAxioms;
 	  }
 	  
 	  
-	   private void createHashMapOfCheckBox( HashMap<String,String> nameOfConcept, Map<String,JCheckBox> checkBoxes)
-	   {
-		    Iterator it = nameOfConcept.entrySet().iterator();
-			while(it.hasNext())
-			{
-		        Map.Entry pair = (Map.Entry)it.next();
-		        checkBoxes.put(pair.getKey().toString(),new JCheckBox(pair.getValue().toString()));
-			}
-	   }
-	   private void createHashMapOfRadioButton( HashMap<String,String> nameOfConcept, Map<String,JRadioButton> checkBoxes)
-	   {
-		    Iterator it = nameOfConcept.entrySet().iterator();
-			while(it.hasNext())
-			{
-		        Map.Entry pair = (Map.Entry)it.next();
-		        checkBoxes.put(pair.getKey().toString(),new JRadioButton(pair.getValue().toString()));
-			}
-	   }
 	   
-	   private void createMenuCheckbox(JPanel panel, HashMap<String, ? extends AbstractButton> mapOfButton, String name)
+	   
+	   
+	   
+	   private void createMenuCheckbox(JPanel panel, HashMap<? extends Object, ? extends AbstractButton> mapOfButton, String name)
 	   {
 		   panel.setLayout(new GridLayout(mapOfButton.size()+1,0));
 		   panel.setBorder(new BevelBorder(BevelBorder.RAISED));
@@ -186,18 +191,7 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 			   panel.add(it);
 		   }
 	   }
-	   private void createMenuRadioButton(JPanel panel, HashMap<String, ? extends AbstractButton> mapOfButton, String name)
-	   {
-		   ButtonGroup group = new ButtonGroup();
-		   panel.setLayout(new GridLayout(mapOfButton.size()+1,0));
-		   panel.setBorder(new BevelBorder(BevelBorder.RAISED));
-		   panel.add(new JLabel(name));
-		   for(AbstractButton it : mapOfButton.values())
-		   {
-			   panel.add(it);
-			   group.add(it);
-		   }
-	   }
 	   
+	 
 
 }

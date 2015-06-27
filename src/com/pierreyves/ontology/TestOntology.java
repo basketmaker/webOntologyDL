@@ -1,46 +1,35 @@
 package com.pierreyves.ontology;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
-import org.semanticweb.elk.owlapi.ElkReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
-import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
-import org.semanticweb.owlapi.model.OWLSubClassOfAxiom;
-import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.HermiT.Reasoner;
 
-import com.clarkparsia.owlapi.explanation.BlackBoxExplanation;
-import com.clarkparsia.owlapi.explanation.HSTExplanationGenerator;
+import com.pierreyves.tool.implementation.RequestDL;
+
+
+
  
  
 public class TestOntology{
-	private static String prefix = "http://www.semanticweb.org/sanae/ontologies/2015/4/desc-logic.owl";
 	
 	public static void main(String[] args) throws Exception {
 		
 		
-		
-		ModeleOfConstructor modele = new ModeleOfConstructor();
+		ModeleOfConstructor modele = new ModeleOfConstructor(new RequestDL());
 		
 		ViewOfDescLogic view = new ViewOfDescLogic(modele);
-		ControleOntology controle = new ControleOntology(modele, view);
-		
-		
+		new ControleOntology(modele, view);
+
 		
 		
 		
@@ -65,11 +54,12 @@ public class TestOntology{
 		
 		//testOWLApiOntology();
 	}
-	
+
 	
 	
 	public static void testOWLApiOntology() throws Exception
 	{
+		/*
 		OWLDataFactory df = OWLManager.getOWLDataFactory();
 		OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
 		OWLOntology ont = manager.loadOntologyFromOntologyDocument(new File("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl"));
@@ -88,6 +78,7 @@ public class TestOntology{
 		  VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
 		  hasDesclogicOnly.accept(visitor);
 		  System.out.println("expression : "+visitor.getExpression());
+		  */
 	}
 	
 	

@@ -5,7 +5,9 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 
 import javax.swing.JCheckBox;
-import javax.swing.JRadioButton;
+
+import com.pierreyves.tool.model.AxiomType;
+import com.pierreyves.tool.model.Constructor;
 
 public class ControleOntology {
 
@@ -16,10 +18,10 @@ public class ControleOntology {
 	  {
 		
 	    this.modelConstructor = pmodelConstructor;
-	    HashMap<String, JCheckBox> tmp = vue.getRoleAxioms();
-	    for(final String name : tmp.keySet())
+	    HashMap<AxiomType, JCheckBox> axiomCheckBox = vue.getRoleAxioms();
+	    for(final AxiomType name : axiomCheckBox.keySet())
 	    {
-	    	tmp.get(name).addActionListener(new ActionListener() {
+	    	axiomCheckBox.get(name).addActionListener(new ActionListener() {
 				boolean ischecked = false;
 				@Override
 				public void actionPerformed(ActionEvent ae) {
@@ -37,50 +39,10 @@ public class ControleOntology {
 			});
 	    }
 	    
-	    tmp = vue.getConceptConstructor();
-	    for(final String name : tmp.keySet())
+	    axiomCheckBox = vue.getConceptAxioms();
+	    for(final AxiomType name : axiomCheckBox.keySet())
 	    {
-	    	tmp.get(name).addActionListener(new ActionListener() {
-				boolean ischecked = false;
-				@Override
-				public void actionPerformed(ActionEvent ae) {
-					if(!ischecked)
-					{
-						ControleOntology.this.modelConstructor.setConceptConstructor(name, true);
-						ischecked = true;
-					}
-					else
-					{
-						ControleOntology.this.modelConstructor.setConceptConstructor(name, false);
-						ischecked = false;
-					}
-				}
-			});
-	    }
-	    tmp = vue.getRoleConstructors();
-	    for(final String name : tmp.keySet())
-	    {
-	    	tmp.get(name).addActionListener(new ActionListener() {
-				boolean ischecked = false;
-				@Override
-				public void actionPerformed(ActionEvent ae) {
-					if(!ischecked)
-					{
-						ControleOntology.this.modelConstructor.setRoleConstructors(name, true);
-						ischecked = true;
-					}
-					else
-					{
-						ControleOntology.this.modelConstructor.setRoleConstructors(name, false);
-						ischecked = false;
-					}
-				}
-			});
-	    }
-	    HashMap<String, JRadioButton> tmp2 = vue.getConceptAxioms();
-	    for(final String name : tmp2.keySet())
-	    {
-	    	tmp2.get(name).addActionListener(new ActionListener() {
+	    	axiomCheckBox.get(name).addActionListener(new ActionListener() {
 				boolean ischecked = false;
 				@Override
 				public void actionPerformed(ActionEvent ae) {
@@ -97,6 +59,49 @@ public class ControleOntology {
 				}
 			});
 	    }
+	    
+	    
+	    HashMap<Constructor,JCheckBox> constructorCheckBox = vue.getConceptConstructor();
+	    for(final Constructor name : constructorCheckBox.keySet())
+	    {
+	    	constructorCheckBox.get(name).addActionListener(new ActionListener() {
+				boolean ischecked = false;
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					if(!ischecked)
+					{
+						ControleOntology.this.modelConstructor.setConceptConstructor(name, true);
+						ischecked = true;
+					}
+					else
+					{
+						ControleOntology.this.modelConstructor.setConceptConstructor(name, false);
+						ischecked = false;
+					}
+				}
+			});
+	    }
+	    constructorCheckBox = vue.getRoleConstructors();
+	    for(final Constructor name : constructorCheckBox.keySet())
+	    {
+	    	constructorCheckBox.get(name).addActionListener(new ActionListener() {
+				boolean ischecked = false;
+				@Override
+				public void actionPerformed(ActionEvent ae) {
+					if(!ischecked)
+					{
+						ControleOntology.this.modelConstructor.setRoleConstructors(name, true);
+						ischecked = true;
+					}
+					else
+					{
+						ControleOntology.this.modelConstructor.setRoleConstructors(name, false);
+						ischecked = false;
+					}
+				}
+			});
+	    }
+	    
 
 	  }
 }

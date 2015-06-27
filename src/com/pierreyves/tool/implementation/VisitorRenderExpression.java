@@ -1,4 +1,4 @@
-package com.pierreyves.ontology;
+package com.pierreyves.tool.implementation;
 
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLClass;
