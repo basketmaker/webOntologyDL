@@ -1,0 +1,37 @@
+Querry Pattern  : Completeness
+
+
+append (pattern 1, pattern2) : 
+	<DecisionProblem name> and ( hasDescriptionLogic some ( DescriptionLogic and
+	 (hasConstructors only ( ..or..or...)) and (hasAxiom only (..or..or..)) 
+	 and (hasConstructor some...) and (hasConstructor some...) 
+	 and (hasAxiom some ...) and (hasAxiom some ...) ) )
+
+
+
+Example : 
+
+ConceptSatisfiability and (hasDescriptionLogic some (DescriptionLogic 
+ 	and	(hasConstructor only 
+		 (ConceptName or RoleComposition or Bottom or ExistentialRestriction or RoleIntersection
+		 or RoleUnion or RoleName or UniversalRestriction or Complement or Top or Conjunction or
+		 Disjunction)) 		
+	and (hasAxiom only 
+		(Inclusion or ConceptAssertion or Equivalence or RoleAssertion)) 
+	and (hasConstructor  some ConceptName) 
+	and (hasConstructor some RoleComposition)  and (hasConstructor some Bottom)  
+	and (hasConstructor some ExistentialRestriction)  and (hasConstructor some RoleIntersection)  
+	and (hasConstructor some RoleUnion)  and (hasConstructor some RoleName)  
+	and (hasConstructor some UniversalRestriction)  and (hasConstructor some Complement)  
+	and (hasConstructor some Top)  and (hasConstructor some Conjunction)  
+	and (hasConstructor some Disjunction) 
+	and (hasAxiom some Inclusion) and (hasAxiom some ConceptAssertion) 
+	and (hasAxiom some Equivalence) and (hasAxiom some RoleAssertion))) 
+	
+	==> PSpace complete
+	
+	
+ConceptSatisfiability and [hasDescriptionLogic some (DescriptionLogic and  
+	(hasConstructor only(Complement or Disjunction or RoleComplement ))
+	and { (hasConstructor some Complement) and (hasConstructor some Disjunction) 
+	and (hasConstructor some RoleComplement)})]

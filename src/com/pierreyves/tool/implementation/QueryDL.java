@@ -8,6 +8,7 @@ import java.util.Set;
 import org.semanticweb.HermiT.Reasoner;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -18,20 +19,23 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import com.clarkparsia.owlapi.explanation.BlackBoxExplanation;
+import com.clarkparsia.owlapi.explanation.HSTExplanationGenerator;
+import com.pierreyves.tool.model.Axiom;
 import com.pierreyves.tool.model.AxiomType;
 import com.pierreyves.tool.model.ComplexityQueryResult;
 import com.pierreyves.tool.model.Constructor;
 import com.pierreyves.tool.model.DecisionProblem;
-import com.pierreyves.tool.model.IRequest;
+import com.pierreyves.tool.model.QueryManager;
 
-public class RequestDL implements IRequest {
+public class QueryDL implements QueryManager {
 
 	private AdapterIdLabel adapter = new AdapterIdLabel("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl");
 	private OWLOntology ont;
 	private OWLDataFactory df;
 	private OWLReasoner reasoner;
 
-	public RequestDL() {
+	public QueryDL() {
 		try {
 			df = OWLManager.getOWLDataFactory();
 			OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
@@ -114,89 +118,71 @@ public class RequestDL implements IRequest {
 				hasDesclogic, descLogicandUnionOfConstructorsAxioms);
 		OWLClassExpression request = df.getOWLObjectIntersectionOf(
 				decisionProblem, hasDesclogicSome);
-
+		
+		/*
 		VisitorRenderExpression visitor = new VisitorRenderExpression(ont,0);
 		request.accept(visitor);
 		System.out.println("expression : " + visitor.getExpression());
-
+		*/
+		
 		NodeSet<OWLClass> subClasses = reasoner.getSuperClasses(request, true);
 
 		String complexity = "";
+		OWLClassExpression complexityOWL = null;
 		for (OWLClass c : subClasses.getFlattened()) {
 
 			if (!adapter.getLabel(c.getIRI()).toString().equals(pdecisionProblem.getId())) 
 			{
 				complexity += adapter.getLabel(c.getIRI())+" ";
+				complexityOWL = c;
 			}
 		}
-		return new ComplexityQueryResultImpl(new ComplexityImpl(complexity),null);
-
-	}
-/*
-	@Override
-	public HardnessQueryResult getHardness(DecisionProblem pdecisionProblem, 
-					Collection<AxiomType> paxioms, Collection<Constructor> pconstructors) {
 		
-		 // get all the class and property we need in the request
-
-		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getId()));
-		OWLObjectProperty hasDesclogic = df.getOWLObjectProperty(adapter.getId("hasDescriptionLogic"));
-		OWLClass descriptionLogic = df.getOWLClass(adapter.getId("DescriptionLogic"));
-		OWLObjectProperty hasConstructorProperty = df.getOWLObjectProperty(adapter.getId("hasConstructor"));
-		OWLObjectProperty hasAxiomProperty = df.getOWLObjectProperty(adapter.getId("hasAxiom"));
-
-		// construct the set of axioms
-		Set<OWLClass> axioms = new HashSet<>();
-		Set<OWLClass> constructors = new HashSet<>();
-		for(AxiomType c : paxioms)
-		{
-			c.toString();
-		}
-		for( Constructor c : pconstructors)
-		{
-			c.toString();
-		}
-
 		
-		 //* Now we can construct the request
-		 
+		
+
+		Set<Axiom> axiomExplain = new HashSet<>();
+		
+		if(complexityOWL != null)
+		{
+			BlackBoxExplanation complexityResultExplanation = new BlackBoxExplanation(ont,new Reasoner.ReasonerFactory(), reasoner);
+			HSTExplanationGenerator complexityResultExplanationGenerate = new HSTExplanationGenerator(complexityResultExplanation);
 			
-
-		Set<OWLClassExpression> hasSome = new HashSet<>();
-		
-		for(OWLClass c : axioms)
-		{
-			hasSome.add(df.getOWLObjectSomeValuesFrom(hasAxiomProperty, c));
-		}
-		for(OWLClass c : constructors)
-		{
-			hasSome.add(df.getOWLObjectSomeValuesFrom(hasConstructorProperty, c));
-		}
-		
-		
-		OWLClassExpression request = df.getOWLObjectIntersectionOf(hasSome);
-		request = df.getOWLObjectIntersectionOf(descriptionLogic,request);
-		request = df.getOWLObjectSomeValuesFrom(hasDesclogic,request);
-		request = df.getOWLObjectIntersectionOf(decisionProblem,request);
-		
-		VisitorRenderExpression visitor = new VisitorRenderExpression(ont);
-		request.accept(visitor);
-		System.out.println("expression : " + visitor.getExpression());
-
-		NodeSet<OWLClass> subClasses = reasoner.getSuperClasses(request, true);
-
-		String hardness = "";
-		for (OWLClass c : subClasses.getFlattened()) {
-
-			if (!adapter.getLabel(c.getIRI()).toString()
-					.equals(pdecisionProblem)) {
-				hardness = adapter.getLabel(c.getIRI());
+			OWLClassExpression unsatRequest = df.getOWLObjectIntersectionOf(request,
+																			df.getOWLObjectComplementOf(complexityOWL));
+			VisitorRenderExpression visitor = new VisitorRenderExpression(ont,0);
+			unsatRequest.accept(visitor);
+			System.out.println("expression : " + visitor.getExpression());
+			
+			
+			Set<Set<OWLAxiom>> explanations = complexityResultExplanationGenerate.getExplanations(unsatRequest,1);
+			for(Set<OWLAxiom> c : explanations)
+			{
+				System.out.println(" explications :");
+				for(OWLAxiom d : c)
+				{
+					String comment ="";
+					String label = "";
+					for(OWLAnnotation e : d.getAnnotations())
+					{
+						if(e.getProperty().isComment())
+							comment = ((OWLLiteral)e.getValue()).getLiteral();
+						if(e.getProperty().isLabel())
+							label = ((OWLLiteral)e.getValue()).getLiteral();
+					}
+					if(comment.length() != 0)
+					{
+						axiomExplain.add(new AxiomImpl(label,comment));
+						System.out.println(label +" : "+ comment);
+					}
+				}
 			}
 		}
-		return new HardnessQueryResultImpl(new HardnessImpl(hardness),null);
+		
+		
+		return new ComplexityQueryResultImpl(new ComplexityImpl(complexity),new ExplanationImpl(axiomExplain));
 	}
-	
-*/
+
 	@Override
 	public Collection<AxiomType> getAllRoleAxioms() {
 		Set<AxiomType> subCategoryReturn = new HashSet<>();
@@ -204,14 +190,16 @@ public class RequestDL implements IRequest {
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
+			String label = "";
+			String symbol = "";
 			for(OWLAnnotation d : c.getAnnotations(ont))
 			{
 				if(d.getProperty().isLabel())
-				{
-					String label = ((OWLLiteral)d.getValue()).getLiteral();
-					subCategoryReturn.add(new AxiomTypeImpl(label));
-				}
+					label = ((OWLLiteral)d.getValue()).getLiteral();
+				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+					symbol = ((OWLLiteral)d.getValue()).getLiteral();
 			}
+			subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
 		}
 		return subCategoryReturn;
 	}
@@ -223,14 +211,17 @@ public class RequestDL implements IRequest {
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
+			String label = "";
+			String symbol = "";
 			for(OWLAnnotation d : c.getAnnotations(ont))
 			{
+				
 				if(d.getProperty().isLabel())
-				{
-					String label = ((OWLLiteral)d.getValue()).getLiteral();
-					subCategoryReturn.add(new AxiomTypeImpl(label));
-				}
+					label = ((OWLLiteral)d.getValue()).getLiteral();
+				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+					symbol = ((OWLLiteral)d.getValue()).getLiteral();
 			}
+			subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
 		}
 		return subCategoryReturn;
 	}
@@ -242,14 +233,17 @@ public class RequestDL implements IRequest {
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
+			String label = "";
+			String symbol = "";
 			for(OWLAnnotation d : c.getAnnotations(ont))
 			{
+				
 				if(d.getProperty().isLabel())
-				{
-					String label = ((OWLLiteral)d.getValue()).getLiteral();
-					subCategoryReturn.add(new ConstructorImpl(label));
-				}
+					label = ((OWLLiteral)d.getValue()).getLiteral();
+				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+					symbol = ((OWLLiteral)d.getValue()).getLiteral();
 			}
+			subCategoryReturn.add(new ConstructorImpl(label,symbol));
 		}
 		return subCategoryReturn;
 	}
@@ -261,14 +255,17 @@ public class RequestDL implements IRequest {
 		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
 		for(OWLClass c : subCategory.getFlattened())
 		{
+			String label = "";
+			String symbol = "";
 			for(OWLAnnotation d : c.getAnnotations(ont))
 			{
+				
 				if(d.getProperty().isLabel())
-				{
-					String label = ((OWLLiteral)d.getValue()).getLiteral();
-					subCategoryReturn.add(new ConstructorImpl(label));
-				}
+					label = ((OWLLiteral)d.getValue()).getLiteral();
+				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+					symbol = ((OWLLiteral)d.getValue()).getLiteral();
 			}
+			subCategoryReturn.add(new ConstructorImpl(label,symbol));
 		}
 		return subCategoryReturn;
 	}

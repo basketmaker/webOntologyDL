@@ -131,7 +131,7 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 		  for(Constructor constructor : pconstructors)
 		  {
 			  constructorWithCheckbox.put(constructor, 
-					  					  new JCheckBox(constructor.getName()));
+					  					  new JCheckBox("<html>"+constructor.getName()+" <font color='red' size='4'>"+constructor.getSymbol()+"</font></html>"));
 		  }
 		  return constructorWithCheckbox;
 	  }
@@ -139,10 +139,10 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 	  private HashMap<AxiomType, JCheckBox> createHashMapOfAxiomCheckBox(Collection<AxiomType> paxioms)
 	  {
 		  HashMap<AxiomType, JCheckBox> constructorWithCheckbox = new HashMap<>();
-		  for(AxiomType constructor : paxioms)
+		  for(AxiomType axiom : paxioms)
 		  {
-			  constructorWithCheckbox.put(constructor, 
-					  					  new JCheckBox(constructor.getName()));
+			  constructorWithCheckbox.put(axiom, 
+					  					  new JCheckBox("<html>"+axiom.getName()+" <font color='red' size='4'>"+axiom.getSymbol()+"</font></html>"));
 		  }
 		  return constructorWithCheckbox;
 	  }

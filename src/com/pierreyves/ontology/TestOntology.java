@@ -14,7 +14,7 @@ import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.HermiT.Reasoner;
 
-import com.pierreyves.tool.implementation.RequestDL;
+import com.pierreyves.tool.implementation.QueryDL;
 
 
 
@@ -25,7 +25,7 @@ public class TestOntology{
 	public static void main(String[] args) throws Exception {
 		
 		
-		ModeleOfConstructor modele = new ModeleOfConstructor(new RequestDL());
+		ModeleOfConstructor modele = new ModeleOfConstructor(new QueryDL());
 		
 		ViewOfDescLogic view = new ViewOfDescLogic(modele);
 		new ControleOntology(modele, view);
@@ -53,6 +53,14 @@ public class TestOntology{
 		
 		
 		//testOWLApiOntology();
+	}
+	
+	
+	
+	public static void testOntology()
+	{
+		
+		
 	}
 
 	

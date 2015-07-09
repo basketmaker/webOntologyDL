@@ -10,19 +10,19 @@ import com.pierreyves.tool.model.AxiomType;
 import com.pierreyves.tool.model.ComplexityQueryResult;
 import com.pierreyves.tool.model.Constructor;
 import com.pierreyves.tool.model.DecisionProblem;
-import com.pierreyves.tool.model.IRequest;
+import com.pierreyves.tool.model.QueryManager;
 
 
 
 public class ModeleOfConstructor extends Observable{ 
 
-	  IRequest request;
+	  QueryManager request;
 	  Set<AxiomType> axiomsSelect;
 	  Set<Constructor> constructorsSelect;
 	  
 	  
 	  
-	  public ModeleOfConstructor(IRequest prequest)
+	  public ModeleOfConstructor(QueryManager prequest)
 	  {
 		  axiomsSelect = new HashSet<>();
 		  constructorsSelect = new HashSet<>();
