@@ -29,21 +29,32 @@ import com.pierreyves.tool.model.DecisionProblem;
 import com.pierreyves.tool.model.QueryManager;
 
 public class QueryDL implements QueryManager {
+	private  String path_ontology = "/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl";
 
-	private AdapterIdLabel adapter = new AdapterIdLabel("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl");
+	private AdapterIdLabel adapter = new AdapterIdLabel(path_ontology);
+	private AxiomTypeConstructorEquivalence equivalenceAxiomConstructors= null;
 	private OWLOntology ont;
 	private OWLDataFactory df;
 	private OWLReasoner reasoner;
+
+	private Collection<AxiomType> roleAxioms = null;
+	private Collection<AxiomType> conceptAxioms = null;
+	private Collection<Constructor> roleConstructors = null;
+	private Collection<Constructor> conceptConstructors = null;
+	
 
 	public QueryDL() {
 		try {
 			df = OWLManager.getOWLDataFactory();
 			OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
-			ont = manager.loadOntologyFromOntologyDocument(new File("/home/basketmaker/workspace/Desc-Logic-Onto/DescriptionLogicsOntology.owl"));
+			ont = manager.loadOntologyFromOntologyDocument(new File(path_ontology));
 			reasoner = new Reasoner.ReasonerFactory().createReasoner(ont);
+			
 		} catch (Exception e) {
-			System.out.println("Error in loading ontology");
+			System.out.println("Error loading ontology in QueryDL");
 		}
+
+		equivalenceAxiomConstructors = new AxiomTypeConstructorEquivalence(path_ontology,adapter,this);
 	}
 
 	@Override
@@ -52,6 +63,11 @@ public class QueryDL implements QueryManager {
 		/*
 		 * get all the class and property we need in the request
 		 */
+		
+		paxioms = equivalenceAxiomConstructors.equivalentAxioms(paxioms);
+		pconstructors = equivalenceAxiomConstructors.equivalentConstructors(pconstructors);
+		
+		
 
 		OWLClass decisionProblem = df.getOWLClass(adapter.getId(pdecisionProblem.getId()));
 		OWLObjectProperty hasDesclogic = df.getOWLObjectProperty(adapter.getId("hasDescriptionLogic"));
@@ -143,6 +159,8 @@ public class QueryDL implements QueryManager {
 
 		Set<Axiom> axiomExplain = new HashSet<>();
 		
+		
+		
 		if(complexityOWL != null)
 		{
 			BlackBoxExplanation complexityResultExplanation = new BlackBoxExplanation(ont,new Reasoner.ReasonerFactory(), reasoner);
@@ -173,101 +191,118 @@ public class QueryDL implements QueryManager {
 					if(comment.length() != 0)
 					{
 						axiomExplain.add(new AxiomImpl(label,comment));
-						System.out.println(label +" : "+ comment);
 					}
 				}
 			}
 		}
 		
 		
-		return new ComplexityQueryResultImpl(new ComplexityImpl(complexity),new ExplanationImpl(axiomExplain));
+		return new ComplexityQueryResultImpl(new ComplexityImpl(complexity),
+											 new ExplanationImpl(axiomExplain),
+											 paxioms,
+											 pconstructors);
 	}
 
 	@Override
 	public Collection<AxiomType> getAllRoleAxioms() {
-		Set<AxiomType> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("RoleAxiom"));
-		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
-		for(OWLClass c : subCategory.getFlattened())
+		if(roleAxioms == null)
 		{
-			String label = "";
-			String symbol = "";
-			for(OWLAnnotation d : c.getAnnotations(ont))
+			Set<AxiomType> subCategoryReturn = new HashSet<>();
+			OWLClass category = df.getOWLClass(adapter.getId("RoleAxiom"));
+			NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
+			for(OWLClass c : subCategory.getFlattened())
 			{
-				if(d.getProperty().isLabel())
-					label = ((OWLLiteral)d.getValue()).getLiteral();
-				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
-					symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				String label = "";
+				String symbol = "";
+				for(OWLAnnotation d : c.getAnnotations(ont))
+				{
+					if(d.getProperty().isLabel())
+						label = ((OWLLiteral)d.getValue()).getLiteral();
+					if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+						symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				}
+				subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
 			}
-			subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
+			roleAxioms = subCategoryReturn;
 		}
-		return subCategoryReturn;
+		return roleAxioms;
 	}
 
 	@Override
 	public Collection<AxiomType> getAllConceptAxioms() {
-		Set<AxiomType> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("ConceptAxiom"));
-		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
-		for(OWLClass c : subCategory.getFlattened())
+		if(conceptAxioms == null)
 		{
-			String label = "";
-			String symbol = "";
-			for(OWLAnnotation d : c.getAnnotations(ont))
+			Set<AxiomType> subCategoryReturn = new HashSet<>();
+			OWLClass category = df.getOWLClass(adapter.getId("ConceptAxiom"));
+			NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
+			for(OWLClass c : subCategory.getFlattened())
 			{
-				
-				if(d.getProperty().isLabel())
-					label = ((OWLLiteral)d.getValue()).getLiteral();
-				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
-					symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				String label = "";
+				String symbol = "";
+				for(OWLAnnotation d : c.getAnnotations(ont))
+				{
+					
+					if(d.getProperty().isLabel())
+						label = ((OWLLiteral)d.getValue()).getLiteral();
+					if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+						symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				}
+				subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
 			}
-			subCategoryReturn.add(new AxiomTypeImpl(label,symbol));
+			return subCategoryReturn;
 		}
-		return subCategoryReturn;
+		return conceptAxioms;
 	}
 
 	@Override
 	public Collection<Constructor> getAllRoleConstructors() {
-		Set<Constructor> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("RoleConstructor"));
-		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
-		for(OWLClass c : subCategory.getFlattened())
+		if(roleConstructors == null)
 		{
-			String label = "";
-			String symbol = "";
-			for(OWLAnnotation d : c.getAnnotations(ont))
+			Set<Constructor> subCategoryReturn = new HashSet<>();
+			OWLClass category = df.getOWLClass(adapter.getId("RoleConstructor"));
+			NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
+			for(OWLClass c : subCategory.getFlattened())
 			{
-				
-				if(d.getProperty().isLabel())
-					label = ((OWLLiteral)d.getValue()).getLiteral();
-				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
-					symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				String label = "";
+				String symbol = "";
+				for(OWLAnnotation d : c.getAnnotations(ont))
+				{
+					
+					if(d.getProperty().isLabel())
+						label = ((OWLLiteral)d.getValue()).getLiteral();
+					if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+						symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				}
+				subCategoryReturn.add(new ConstructorImpl(label,symbol));
 			}
-			subCategoryReturn.add(new ConstructorImpl(label,symbol));
+			roleConstructors = subCategoryReturn;
 		}
-		return subCategoryReturn;
+		return roleConstructors;
 	}
 
 	@Override
 	public Collection<Constructor> getAllConceptConstructors() {
-		Set<Constructor> subCategoryReturn = new HashSet<>();
-		OWLClass category = df.getOWLClass(adapter.getId("ConceptConstructor"));
-		NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
-		for(OWLClass c : subCategory.getFlattened())
+		if(conceptConstructors == null)
 		{
-			String label = "";
-			String symbol = "";
-			for(OWLAnnotation d : c.getAnnotations(ont))
+			Set<Constructor> subCategoryReturn = new HashSet<>();
+			OWLClass category = df.getOWLClass(adapter.getId("ConceptConstructor"));
+			NodeSet<OWLClass> subCategory = reasoner.getSubClasses(category, true);
+			for(OWLClass c : subCategory.getFlattened())
 			{
-				
-				if(d.getProperty().isLabel())
-					label = ((OWLLiteral)d.getValue()).getLiteral();
-				if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
-					symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				String label = "";
+				String symbol = "";
+				for(OWLAnnotation d : c.getAnnotations(ont))
+				{
+					if(d.getProperty().isLabel())
+						label = ((OWLLiteral)d.getValue()).getLiteral();
+					if(d.getProperty().equals(df.getOWLAnnotationProperty(adapter.getId("symbol"))))
+						symbol = ((OWLLiteral)d.getValue()).getLiteral();
+				}
+				subCategoryReturn.add(new ConstructorImpl(label,symbol));
 			}
-			subCategoryReturn.add(new ConstructorImpl(label,symbol));
+			conceptConstructors = subCategoryReturn;
 		}
-		return subCategoryReturn;
+		return conceptConstructors;
 	}
 
 	@Override

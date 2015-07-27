@@ -1,0 +1,71 @@
+PLAN 
+I Presentation of the Application
+	a) What are the main goals
+We made the application to have a render like this website, Solène has made the ontology as you already see 
+and i made the implementation of the model for querying the ontology
+For this purpose we use OWL API I will show you how to use it in the second part 
+[image website about DL logics in JS]
+
+
+	b) what are the main query
+In a first demo I made a strong coupling between the model and the view 
+[image of wire bordel]
+this was a mess 
+
+So I use an interface 
+because if we want to use an other querying manager model (like SQL, MongoDB, and so on...), or an other view
+we need a separation between the querying model and the view of the application  (we don t need to change all if we want to change just a little bit ...)
+[image about the interface of model QueryManager]
+first of all we have functions to get all constructors and axioms type in the view it usefull for display and to use it in the controler
+axioms type have a label and a symbol
+constructors to
+we also have a query to get the decision problems
+we need it to get the ComplexityQueryResult result as you see in the function getComplexity
+we get the Complexity memberShip and the hardness and also some explanation about it
+
+
+Now that we have talk about the model we can talk about the implementation using owlAPI
+
+II Presentation of OWL API 
+	a) What is owl?
+A higher level langage than SQL and other NoSQL (not only SQL) for representation of data
+We use OWL-DL wich is a SHOIN language and is like a graph based database
+The OWL API is a Java interface and implementation for the W3C Web Ontology Language (OWL), used to represent Semantic Web ontologies
+Solène showed you how to make query in protege but we had to make it in java. 
+
+
+	b) query an ontology
+We use a reasoner to get the result of solene's question in Protege. the reasoner is Hermit which is the reasoner in Protege but here the 
+reasoner which is used is not important and didn't change the comportement of owlAPI
+after we create the reasoner we had to construct the request to give to the reasoner so we get the Axioms type and constructors which are checked
+and we can construct the request using the OWLClassExpression Interface.
+	we use those interfaces which extends OWLClassExpression
+		OWLClass which is an atomic concept
+		OWLObjectIntersectionOf which is the conjonction of OWLClassExpression 
+		OWLObjectUnionOf which is the disjonction of OWLClassExpression 
+		OWLObjectSomeValuesFrom which is equivalent to the existential 
+		OWLObjectAllValuesFrom which is equivalent to the forall
+
+
+
+
+to get the explanation we use the BlackBoxExplanation class
+
+
+
+III Some implementations of the model
+[display the application swing and test it]
+	a) Swing
+you can see that the application respond when we check a box 
+We display the results of complexity and hardness and also the explanation of the results
+We get only one explanation we can display all of them but it is too long.
+ 
+
+
+[display the web site application and test it]
+	b) Java Enterprise Edition 
+The first goal was to make a website (we used swing for testing the model it is more easy for testing)
+but it was  a pitty if we did 
+For the website it is an ancient version of the model because we made the test into swing (more convenient)
+but it will work if we update the model 
+

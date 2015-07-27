@@ -14,12 +14,12 @@ public class AxiomImpl implements Axiom{
 	@Override
 	public String getDescription() {
 		// TODO Auto-generated method stub
-		return name;
+		return description;
 	}
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return description;
+		return name;
 	}
 
 }

@@ -40,7 +40,7 @@ public class AdapterIdLabel {
 		}
 		catch(Exception e)
 		{
-			System.out.println("Error in loading ontology");
+			System.out.println("Error in loading ontology in adapterIdLabel");
 			System.exit(1);
 		}
 		

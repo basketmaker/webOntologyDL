@@ -21,7 +21,6 @@ public class ModeleOfConstructor extends Observable{
 	  Set<Constructor> constructorsSelect;
 	  
 	  
-	  
 	  public ModeleOfConstructor(QueryManager prequest)
 	  {
 		  axiomsSelect = new HashSet<>();

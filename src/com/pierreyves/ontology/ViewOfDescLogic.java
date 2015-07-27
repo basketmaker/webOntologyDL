@@ -3,7 +3,9 @@ package com.pierreyves.ontology;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 
+import com.pierreyves.tool.model.Axiom;
 import com.pierreyves.tool.model.AxiomType;
+import com.pierreyves.tool.model.ComplexityQueryResult;
 import com.pierreyves.tool.model.Constructor;
 import com.pierreyves.tool.model.DecisionProblem;
 
@@ -118,10 +120,50 @@ public class ViewOfDescLogic extends JFrame implements Observer {
 		    if(obs instanceof ModeleOfConstructor)
 		    {
 		    	ModeleOfConstructor complexity = (ModeleOfConstructor)obs;
+		    	boolean setIncompleteChecked = true;
 		    	for(DecisionProblem c : complexityAndHardnessResult.keySet())
 		    	{
-		    		complexityAndHardnessResult.get(c).setText(complexity.getComplexityResult(c).getComplexity().getName());
+
+		    		ComplexityQueryResult result = complexity.getComplexityResult(c);
+		    		if(setIncompleteChecked)
+		    		{
+		    			setIncompleteChecked = false;
+		    			for(AxiomType notSelectedAxioms : result.getAxiomsType())
+		    				if(roleAxioms.containsKey(notSelectedAxioms))
+		    				{
+		    					complexity.setRoleAxiom(notSelectedAxioms, true);
+		    					roleAxioms.get(notSelectedAxioms).setSelected(true);
+		    				}
+		    			for(AxiomType notSelectedAxioms : result.getAxiomsType())
+		    				if(conceptAxioms.containsKey(notSelectedAxioms))
+		    				{
+		    					complexity.setConceptAxioms(notSelectedAxioms, true);
+		    					conceptAxioms.get(notSelectedAxioms).setSelected(true);
+		    				}
+		    			for(Constructor notSelectedConstructors : result.getConstructors())
+		    				if(roleConstructors.containsKey(notSelectedConstructors))
+		    				{
+		    					complexity.setRoleConstructors(notSelectedConstructors, true);
+		    					roleConstructors.get(notSelectedConstructors).setSelected(true);
+		    				}
+		    			for(Constructor notSelectedConstructors : result.getConstructors())
+		    				if(conceptConstructor.containsKey(notSelectedConstructors))
+		    				{
+		    					complexity.setConceptConstructor(notSelectedConstructors, true);
+		    					conceptConstructor.get(notSelectedConstructors).setSelected(true);
+		    				}
+		    		}
+		    		
+		    		String explanations = "";
+		    		for(Axiom axiom : result.getExplanation().getExplanation())
+		    		{
+		    			explanations+=axiom.getDescription()+"\n"; 
+		    		}
+		    		complexityAndHardnessResult.get(c).setText("<html>"+result.getComplexity().getName()+
+		    													(explanations.length() != 0 ? "<br/>"+"explanations: <br/>" : "")+
+		    													explanations+"</html>");
 		    	}
+
 		    } 
 	    }
 	    
